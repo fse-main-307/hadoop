@@ -61,6 +61,7 @@ public class AtomicFileOutputStream extends FilterOutputStream {
   }
 
   @Override
+  @SuppressWarnings("objectconstruction:required.method.not.called") //FP: we should define temp variable for type cast node
   public void close() throws IOException {
     boolean triedToClose = false, success = false;
     try {

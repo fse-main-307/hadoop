@@ -28,6 +28,10 @@ import org.apache.hadoop.hdfs.server.datanode.FileIoProvider;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.nativeio.NativeIOException;
 import org.apache.hadoop.util.DataChecksum;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+import org.checkerframework.checker.mustcall.qual.MustCallChoice;
+import org.checkerframework.checker.objectconstruction.qual.NotOwning;
+import org.checkerframework.checker.objectconstruction.qual.Owning;
 import org.slf4j.Logger;
 
 /**
@@ -38,9 +42,9 @@ public class ReplicaOutputStreams implements Closeable {
 
   private FileDescriptor outFd = null;
   /** Stream to block. */
-  private OutputStream dataOut;
+  private final @Owning OutputStream dataOut;
   /** Stream to checksum. */
-  private final OutputStream checksumOut;
+  private final @Owning OutputStream checksumOut;
   private final DataChecksum checksum;
   private final FsVolumeSpi volume;
   private final FileIoProvider fileIoProvider;
@@ -49,9 +53,9 @@ public class ReplicaOutputStreams implements Closeable {
    * Create an object with a data output stream, a checksum output stream
    * and a checksum.
    */
-  public ReplicaOutputStreams(
-      OutputStream dataOut, OutputStream checksumOut, DataChecksum checksum,
-      FsVolumeSpi volume, FileIoProvider fileIoProvider) {
+  @SuppressWarnings({"mustcall:assignment.type.incompatible","objectconstruction:required.method.not.called"}) //FP: we should define tempvar for TypeCastNode
+  @MustCallChoice public ReplicaOutputStreams(@Owning OutputStream dataOut, @MustCallChoice OutputStream checksumOut, DataChecksum checksum,
+                              FsVolumeSpi volume, FileIoProvider fileIoProvider) {
 
     this.dataOut = dataOut;
     this.checksum = checksum;
@@ -77,12 +81,12 @@ public class ReplicaOutputStreams implements Closeable {
   }
 
   /** @return the data output stream. */
-  public OutputStream getDataOut() {
+  @NotOwning public OutputStream getDataOut() {
     return dataOut;
   }
 
   /** @return the checksum output stream. */
-  public OutputStream getChecksumOut() {
+  @NotOwning public OutputStream getChecksumOut() {
     return checksumOut;
   }
 
@@ -97,14 +101,17 @@ public class ReplicaOutputStreams implements Closeable {
   }
 
   @Override
+  @SuppressWarnings("contracts.postcondition.not.satisfied")
+  @EnsuresCalledMethods(value = {"this.checksumOut", "this.dataOut"}, methods = {"close"})
   public void close() {
     IOUtils.closeStream(dataOut);
     IOUtils.closeStream(checksumOut);
   }
 
+  @EnsuresCalledMethods(value = {"this.dataOut"}, methods = {"close"})
   public void closeDataStream() throws IOException {
     dataOut.close();
-    dataOut = null;
+//    dataOut = null;
   }
 
   /**

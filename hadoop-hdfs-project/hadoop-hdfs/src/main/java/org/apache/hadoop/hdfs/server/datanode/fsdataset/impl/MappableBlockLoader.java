@@ -26,6 +26,7 @@ import org.apache.hadoop.hdfs.ExtendedBlockId;
 import org.apache.hadoop.hdfs.server.datanode.BlockMetadataHeader;
 import org.apache.hadoop.hdfs.server.datanode.DNConf;
 import org.apache.hadoop.util.DataChecksum;
+import org.checkerframework.checker.objectconstruction.qual.Owning;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;

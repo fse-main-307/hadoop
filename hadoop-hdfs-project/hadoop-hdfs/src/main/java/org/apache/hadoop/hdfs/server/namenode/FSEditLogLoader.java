@@ -27,6 +27,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 
+import org.checkerframework.checker.mustcall.qual.MustCallChoice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -96,13 +97,13 @@ import org.apache.hadoop.hdfs.server.namenode.FSEditLogOp.TruncateOp;
 import org.apache.hadoop.hdfs.server.namenode.FSEditLogOp.UpdateBlocksOp;
 import org.apache.hadoop.hdfs.server.namenode.FSEditLogOp.UpdateMasterKeyOp;
 import org.apache.hadoop.hdfs.server.namenode.FSEditLogOp
-    .AddErasureCodingPolicyOp;
+        .AddErasureCodingPolicyOp;
 import org.apache.hadoop.hdfs.server.namenode.FSEditLogOp
-    .RemoveErasureCodingPolicyOp;
+        .RemoveErasureCodingPolicyOp;
 import org.apache.hadoop.hdfs.server.namenode.FSEditLogOp
-    .EnableErasureCodingPolicyOp;
+        .EnableErasureCodingPolicyOp;
 import org.apache.hadoop.hdfs.server.namenode.FSEditLogOp
-    .DisableErasureCodingPolicyOp;
+        .DisableErasureCodingPolicyOp;
 import org.apache.hadoop.hdfs.server.namenode.INode.BlocksMapUpdateInfo;
 import org.apache.hadoop.hdfs.server.namenode.LeaseManager.Lease;
 import org.apache.hadoop.hdfs.server.namenode.NNStorage.NameNodeFile;
@@ -1342,7 +1343,7 @@ public class FSEditLogLoader {
     private long markPos = -1;
     private long limitPos = Long.MAX_VALUE;
 
-    public PositionTrackingInputStream(InputStream is) {
+    @MustCallChoice public PositionTrackingInputStream(@MustCallChoice InputStream is) {
       super(is);
     }
 

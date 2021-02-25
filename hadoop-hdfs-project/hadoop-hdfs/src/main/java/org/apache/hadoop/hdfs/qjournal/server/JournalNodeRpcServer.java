@@ -175,6 +175,7 @@ public class JournalNodeRpcServer implements QJournalProtocol,
   }
 
   @Override
+  @SuppressWarnings("objectconstruction:reset.not.owning")
   public void format(String journalId,
                      String nameServiceId,
                      NamespaceInfo nsInfo,

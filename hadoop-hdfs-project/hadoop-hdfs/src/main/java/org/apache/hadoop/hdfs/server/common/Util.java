@@ -38,6 +38,7 @@ import java.util.Set;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import org.checkerframework.checker.objectconstruction.qual.Owning;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -191,9 +192,10 @@ public final class Util {
    * Receives file at the url location from the input stream and puts them in
    * the specified destination storage location.
    */
+  @SuppressWarnings("objectconstruction:required.method.not.called") //TP: stream remains open in possible exceptional exit due to throw new IOException("No filename header provided by server");
   public static MD5Hash receiveFile(String url, List<File> localPaths,
       Storage dstStorage, boolean getChecksum, long advertisedSize,
-      MD5Hash advertisedDigest, String fsImageName, InputStream stream,
+      MD5Hash advertisedDigest, String fsImageName,@Owning InputStream stream,
       DataTransferThrottler throttler) throws
       IOException {
     long startTime = Time.monotonicNow();

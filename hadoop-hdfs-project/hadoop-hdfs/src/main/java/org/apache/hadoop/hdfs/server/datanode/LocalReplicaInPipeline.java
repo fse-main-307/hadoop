@@ -283,6 +283,7 @@ public class LocalReplicaInPipeline extends LocalReplica
   }
 
   @Override // ReplicaInPipeline
+  @SuppressWarnings("objectconstruction:required.method.not.called") //TP: the result of new RandomAccessFile(blockFile, "rw") remains open in possible exceptional exit due to new RandomAccessFile(blockFile, "rw").getFD()
   public ReplicaOutputStreams createStreams(boolean isCreate,
       DataChecksum requestedChecksum) throws IOException {
     final File blockFile = getBlockFile();

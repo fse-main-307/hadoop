@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -222,7 +223,7 @@ public class NameNodeProxies {
     return new InMemoryAliasMapProtocolClientSideTranslatorPB(proxy);
   }
 
-  private static JournalProtocol createNNProxyWithJournalProtocol(
+  private static @MustCall("close") JournalProtocol createNNProxyWithJournalProtocol(
       InetSocketAddress address, Configuration conf, UserGroupInformation ugi,
       AlignmentContext alignmentContext) throws IOException {
     JournalProtocolPB proxy = createNameNodeProxy(address,
@@ -230,7 +231,7 @@ public class NameNodeProxies {
     return new JournalProtocolTranslatorPB(proxy);
   }
 
-  private static RefreshAuthorizationPolicyProtocol
+  private static @MustCall("close") RefreshAuthorizationPolicyProtocol
       createNNProxyWithRefreshAuthorizationPolicyProtocol(InetSocketAddress address,
       Configuration conf, UserGroupInformation ugi,
       AlignmentContext alignmentContext) throws IOException {
@@ -239,8 +240,8 @@ public class NameNodeProxies {
         alignmentContext);
     return new RefreshAuthorizationPolicyProtocolClientSideTranslatorPB(proxy);
   }
-  
-  private static RefreshUserMappingsProtocol
+
+  private static @MustCall("close") RefreshUserMappingsProtocol
       createNNProxyWithRefreshUserMappingsProtocol(InetSocketAddress address,
       Configuration conf, UserGroupInformation ugi,
       AlignmentContext alignmentContext) throws IOException {
@@ -249,7 +250,7 @@ public class NameNodeProxies {
     return new RefreshUserMappingsProtocolClientSideTranslatorPB(proxy);
   }
 
-  private static RefreshCallQueueProtocol
+  private static @MustCall("close") RefreshCallQueueProtocol
       createNNProxyWithRefreshCallQueueProtocol(InetSocketAddress address,
       Configuration conf, UserGroupInformation ugi,
       AlignmentContext alignmentContext) throws IOException {
@@ -258,15 +259,15 @@ public class NameNodeProxies {
     return new RefreshCallQueueProtocolClientSideTranslatorPB(proxy);
   }
 
-  private static GetUserMappingsProtocol createNNProxyWithGetUserMappingsProtocol(
+  private static @MustCall("close") GetUserMappingsProtocol createNNProxyWithGetUserMappingsProtocol(
       InetSocketAddress address, Configuration conf, UserGroupInformation ugi,
       AlignmentContext alignmentContext) throws IOException {
     GetUserMappingsProtocolPB proxy = createNameNodeProxy(address, conf, ugi,
         GetUserMappingsProtocolPB.class, 0, alignmentContext);
     return new GetUserMappingsProtocolClientSideTranslatorPB(proxy);
   }
-  
-  private static NamenodeProtocol createNNProxyWithNamenodeProtocol(
+
+  private static @MustCall("close") NamenodeProtocol createNNProxyWithNamenodeProtocol(
       InetSocketAddress address, Configuration conf, UserGroupInformation ugi,
       boolean withRetries, AlignmentContext alignmentContext)
       throws IOException {

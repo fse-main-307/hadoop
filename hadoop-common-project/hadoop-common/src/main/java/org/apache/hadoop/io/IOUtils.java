@@ -38,6 +38,8 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.PathIOException;
 import org.apache.hadoop.util.Shell;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+import org.checkerframework.checker.objectconstruction.qual.EnsuresCalledMethodsVarArgs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -251,6 +253,8 @@ public class IOUtils {
    * instead
    */
   @Deprecated
+  @SuppressWarnings({"ensuresvarargs.unverified", "contracts.postcondition.not.satisfied", "required.method.not.called"})
+  @EnsuresCalledMethodsVarArgs("close")
   public static void cleanup(Log log, java.io.Closeable... closeables) {
     for (java.io.Closeable c : closeables) {
       if (c != null) {
@@ -272,6 +276,8 @@ public class IOUtils {
    * @param logger the log to record problems to at debug level. Can be null.
    * @param closeables the objects to close
    */
+  @SuppressWarnings({"ensuresvarargs.unverified", "contracts.postcondition.not.satisfied", "required.method.not.called"})
+  @EnsuresCalledMethodsVarArgs("close")
   public static void cleanupWithLogger(Logger logger,
       java.io.Closeable... closeables) {
     for (java.io.Closeable c : closeables) {
@@ -293,6 +299,8 @@ public class IOUtils {
    *
    * @param stream the Stream to close
    */
+  @SuppressWarnings({"contracts.postcondition.not.satisfied", "required.method.not.called"})
+  @EnsuresCalledMethods(value = "#1", methods = "close")
   public static void closeStream(java.io.Closeable stream) {
     if (stream != null) {
       cleanupWithLogger(null, stream);
@@ -305,6 +313,8 @@ public class IOUtils {
    *
    * @param streams the Streams to close
    */
+  @SuppressWarnings({"ensuresvarargs.unverified", "contracts.postcondition.not.satisfied", "required.method.not.called"})
+  @EnsuresCalledMethodsVarArgs("close")
   public static void closeStreams(java.io.Closeable... streams) {
     if (streams != null) {
       cleanupWithLogger(null, streams);
@@ -316,6 +326,7 @@ public class IOUtils {
    *
    * @param sock the Socket to close
    */
+  @EnsuresCalledMethods(value = "#1", methods = "close")
   public static void closeSocket(Socket sock) {
     if (sock != null) {
       try {

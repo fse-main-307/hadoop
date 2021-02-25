@@ -109,6 +109,7 @@ public class SecureDataNodeStarter implements Daemon {
    * the port of HTTP (not HTTPS) server.
    */
   @VisibleForTesting
+  @SuppressWarnings("objectconstruction:required.method.not.called") //TP: httpChannel possible exceptional exit due to throw new RuntimeException("Unable to bind on specified info port in secure context. Needed " + infoSocAddr.getPort() + ", got " + ss.getLocalPort()) :: TP: ss also remains open
   public static SecureResources getSecureResources(Configuration conf)
       throws Exception {
     HttpConfig.Policy policy = DFSUtil.getHttpPolicy(conf);
@@ -126,9 +127,9 @@ public class SecureDataNodeStarter implements Daemon {
     int backlogLength = conf.getInt(
         CommonConfigurationKeysPublic.IPC_SERVER_LISTEN_QUEUE_SIZE_KEY,
         CommonConfigurationKeysPublic.IPC_SERVER_LISTEN_QUEUE_SIZE_DEFAULT);
-
-    ServerSocket ss = (socketWriteTimeout > 0) ? 
+    ServerSocket ss = (socketWriteTimeout > 0) ?
         ServerSocketChannel.open().socket() : new ServerSocket();
+
     try {
       ss.bind(streamingAddr, backlogLength);
     } catch (BindException e) {

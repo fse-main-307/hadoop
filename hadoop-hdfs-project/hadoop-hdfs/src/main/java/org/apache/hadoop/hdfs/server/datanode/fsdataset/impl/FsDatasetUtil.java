@@ -46,6 +46,7 @@ import org.apache.hadoop.hdfs.server.datanode.ReplicaInfo;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.DataChecksum;
 import org.apache.htrace.shaded.fasterxml.jackson.databind.util.ByteBufferBackedInputStream;
+import org.checkerframework.checker.mustcall.qual.MustCall;
 
 /** Utility methods. */
 @InterfaceAudience.Private
@@ -107,7 +108,7 @@ public class FsDatasetUtil {
     return matches[0];
   }
 
-  public static FileDescriptor openAndSeek(File file, long offset)
+  public static @MustCall("close") FileDescriptor openAndSeek(File file, long offset)
       throws IOException {
     RandomAccessFile raf = null;
     try {
@@ -122,6 +123,7 @@ public class FsDatasetUtil {
     }
   }
 
+  @SuppressWarnings("objectconstruction:required.method.not.called") //FP: needs adding annotation for Channels
   public static InputStream getInputStreamAndSeek(File file, long offset)
       throws IOException {
     RandomAccessFile raf = null;

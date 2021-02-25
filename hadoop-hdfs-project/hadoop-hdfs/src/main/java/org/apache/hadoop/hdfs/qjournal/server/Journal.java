@@ -34,6 +34,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.Range;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+import org.checkerframework.checker.mustcall.qual.ResetMustCall;
+import org.checkerframework.checker.objectconstruction.qual.Owning;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -130,13 +133,13 @@ public class Journal implements Closeable {
    * during the recovery procedures, and as a visibility mark
    * for clients reading in-progress logs.
    */
-  private BestEffortLongFile committedTxnId;
+  private @Owning BestEffortLongFile committedTxnId;
   
   public static final String LAST_PROMISED_FILENAME = "last-promised-epoch";
   public static final String LAST_WRITER_EPOCH = "last-writer-epoch";
   private static final String COMMITTED_TXID_FILENAME = "committed-txid";
   
-  private final FileJournalManager fjm;
+  private final @Owning FileJournalManager fjm;
 
   private JournaledEditsCache cache;
 
@@ -156,6 +159,7 @@ public class Journal implements Closeable {
    */
   private static final int WARN_SYNC_MILLIS_THRESHOLD = 1000;
 
+  @SuppressWarnings("objectconstruction:reset.not.owning")
   Journal(Configuration conf, File logDir, String journalId,
       StartupOption startOpt, StorageErrorReporter errorReporter)
       throws IOException {
@@ -199,6 +203,7 @@ public class Journal implements Closeable {
    * when we first load the Journal, but also after any formatting
    * operation, since the cached data is no longer relevant.
    */
+  @ResetMustCall("this")
   private synchronized void refreshCachedData() {
     IOUtils.closeStream(committedTxnId);
     
@@ -248,6 +253,7 @@ public class Journal implements Closeable {
   /**
    * Format the local storage with the given namespace.
    */
+  @ResetMustCall("this")
   void format(NamespaceInfo nsInfo, boolean force) throws IOException {
     Preconditions.checkState(nsInfo.getNamespaceID() != 0,
         "can't format with uninitialized namespace info: %s",
@@ -263,10 +269,12 @@ public class Journal implements Closeable {
    * Unlock and release resources.
    */
   @Override // Closeable
+  @SuppressWarnings("objectconstruction:contracts.postcondition.not.satisfied")
+  @EnsuresCalledMethods(value = {"this.committedTxnId"}, methods = {"close"})
   public void close() throws IOException {
-    storage.close();
     IOUtils.closeStream(committedTxnId);
     IOUtils.closeStream(curSegment);
+    storage.close();
   }
   
   JNStorage getStorage() {
@@ -1116,6 +1124,7 @@ public class Journal implements Closeable {
     storage.getJournalManager().doPreUpgrade();
   }
 
+  @SuppressWarnings("objectconstruction:missing.reset.mustcall")
   public synchronized void doUpgrade(StorageInfo sInfo) throws IOException {
     long oldCTime = storage.getCTime();
     storage.cTime = sInfo.cTime;

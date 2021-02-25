@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.hadoop.hdfs.server.aliasmap.InMemoryAliasMap;
+import org.checkerframework.checker.objectconstruction.qual.Owning;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -329,6 +330,7 @@ public class TransferFsImage {
     }
   }
 
+  @SuppressWarnings("objectconstruction:required.method.not.called") //TP: possible exceptional exit due to new FileInputStream(imageFile)
   private static void writeFileToPutRequest(Configuration conf,
       HttpURLConnection connection, File imageFile, Canceler canceler)
       throws IOException {
@@ -349,13 +351,14 @@ public class TransferFsImage {
    * A server-side method to respond to a getfile http request
    * Copies the contents of the local file into the output stream.
    */
-  public static void copyFileToStream(OutputStream out, File localfile,
+  public static void copyFileToStream(@Owning OutputStream out, File localfile,
       FileInputStream infile, DataTransferThrottler throttler)
     throws IOException {
     copyFileToStream(out, localfile, infile, throttler, null);
   }
 
-  private static void copyFileToStream(OutputStream out, File localfile,
+  @SuppressWarnings("objectconstruction:required.method.not.called") //FP: can't verify that out is closed by client
+  private static void copyFileToStream(@Owning OutputStream out, File localfile,
       FileInputStream infile, DataTransferThrottler throttler,
       Canceler canceler) throws IOException {
     byte buf[] = new byte[IO_FILE_BUFFER_SIZE];

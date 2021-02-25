@@ -126,6 +126,7 @@ class FSImagePreTransactionalStorageInspector extends FSImageStorageInspector {
    * @return If file exists and can be read, last checkpoint time. If not, 0L.
    * @throws IOException On errors processing file pointed to by sd
    */
+  @SuppressWarnings("objectconstruction:required.method.not.called") //FP: can't verify that cleanupWithLogger() closes in
   static long readCheckpointTime(StorageDirectory sd) throws IOException {
     File timeFile = NNStorage.getStorageFile(sd, NameNodeFile.TIME);
     long timeStamp = 0L;

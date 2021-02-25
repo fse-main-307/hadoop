@@ -140,6 +140,7 @@ public interface ReadOnlyList<E> extends Iterable<E> {
         }
 
         @Override
+        @SuppressWarnings("mustcall:assignment.type.incompatible")
         public Object[] toArray() {
           final Object[] a = new Object[size()];
           for(int i = 0; i < a.length; i++) {

@@ -65,6 +65,8 @@ import static org.apache.hadoop.io.nativeio.NativeIO.POSIX.POSIX_FADV_DONTNEED;
 import static org.apache.hadoop.io.nativeio.NativeIO.POSIX.SYNC_FILE_RANGE_WRITE;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+import org.checkerframework.checker.objectconstruction.qual.Owning;
 import org.slf4j.Logger;
 
 /** A class that receives a block and writes to its own disk, meanwhile
@@ -88,7 +90,7 @@ class BlockReceiver implements Closeable {
    * the DataNode needs to recalculate checksums before writing.
    */
   private final boolean needsChecksumTranslation;
-  private DataOutputStream checksumOut = null; // to crc file at local disk
+  private final @Owning DataOutputStream checksumOut; // to crc file at local disk
   private final int bytesPerChecksum;
   private final int checksumSize;
   
@@ -311,6 +313,8 @@ class BlockReceiver implements Closeable {
    * close files and release volume reference.
    */
   @Override
+  @SuppressWarnings("contracts.postcondition.not.satisfied")
+  @EnsuresCalledMethods(value = {"this.checksumOut"}, methods = {"close"})
   public void close() throws IOException {
     Span span = Tracer.getCurrentSpan();
     if (span != null) {
@@ -339,7 +343,7 @@ class BlockReceiver implements Closeable {
         flushTotalNanos += flushEndNanos - flushStartNanos;
         measuredFlushTime = true;
         checksumOut.close();
-        checksumOut = null;
+//        checksumOut = null; // https://stackoverflow.com/questions/2495223/java-making-reference-null-after-closing-stream
       }
     } catch(IOException e) {
       ioe = e;

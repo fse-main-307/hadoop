@@ -47,6 +47,10 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.CrcComposer;
 import org.apache.hadoop.util.CrcUtil;
 import org.apache.hadoop.util.DataChecksum;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
+import org.checkerframework.checker.objectconstruction.qual.NotOwning;
+import org.checkerframework.checker.objectconstruction.qual.Owning;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -155,13 +159,15 @@ final class BlockChecksumHelper {
   /**
    * The abstract base block checksum computer, mainly for replicated blocks.
    */
+  @InheritableMustCall("compute")
   static abstract class BlockChecksumComputer
       extends AbstractBlockChecksumComputer {
     private final ExtendedBlock block;
     // client side now can specify a range of the block for checksum
     private final long requestLength;
-    private final LengthInputStream metadataIn;
-    private final DataInputStream checksumIn;
+    private final @Owning LengthInputStream metadataIn;
+    @SuppressWarnings("objectconstruction:required.method.not.called") //FP: compute() call close
+    private final @Owning DataInputStream checksumIn;
     private final long visibleLength;
     private final boolean partialBlk;
 
@@ -205,7 +211,7 @@ final class BlockChecksumHelper {
       return metadataIn;
     }
 
-    DataInputStream getChecksumIn() {
+    @NotOwning DataInputStream getChecksumIn() {
       return checksumIn;
     }
 
@@ -291,6 +297,8 @@ final class BlockChecksumHelper {
     }
 
     @Override
+    @SuppressWarnings("objectconstruction:contracts.postcondition.not.satisfied")
+    @EnsuresCalledMethods(value = {"this.checksumIn", "this.metadataIn"}, methods = {"close"})
     void compute() throws IOException {
       try {
         readHeader();

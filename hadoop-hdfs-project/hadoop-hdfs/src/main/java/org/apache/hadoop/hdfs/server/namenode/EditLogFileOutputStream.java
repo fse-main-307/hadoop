@@ -26,6 +26,7 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -73,6 +74,7 @@ public class EditLogFileOutputStream extends EditLogOutputStream {
    *          Size of flush buffer
    * @throws IOException
    */
+  @SuppressWarnings("objectconstruction:required.method.not.called") //TP: rp remains open in possible exceptional exit due to rp.getFD() :: TP: same reason
   public EditLogFileOutputStream(Configuration conf, File name, int size)
       throws IOException {
     super();
@@ -89,6 +91,7 @@ public class EditLogFileOutputStream extends EditLogOutputStream {
       rp = new RandomAccessFile(name, "rw");
     }
     fp = new FileOutputStream(rp.getFD()); // open for append
+
     fc = rp.getChannel();
     fc.position(fc.size());
   }
@@ -140,6 +143,7 @@ public class EditLogFileOutputStream extends EditLogOutputStream {
   }
 
   @Override
+  @EnsuresCalledMethods(value = {"this.fc", "this.fp"}, methods = {"close"})
   public void close() throws IOException {
     if (fp == null) {
       throw new IOException("Trying to use aborted output stream");

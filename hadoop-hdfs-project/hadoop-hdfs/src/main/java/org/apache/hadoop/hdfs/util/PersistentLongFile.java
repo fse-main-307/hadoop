@@ -88,6 +88,7 @@ public class PersistentLongFile {
     }
   }
 
+  @SuppressWarnings("objectconstruction:required.method.not.called") //FP: for some reason we couldn't verify that cleanupWithLogger closes br
   public static long readFile(File file, long defaultVal) throws IOException {
     long val = defaultVal;
     if (file.exists()) {

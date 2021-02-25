@@ -255,10 +255,10 @@ public class StorageInfo {
       file.seek(0);
       props.load(in);
     } finally {
+      file.close();
       if (in != null) {
         in.close();
       }
-      file.close();
     }
     return props;
   }

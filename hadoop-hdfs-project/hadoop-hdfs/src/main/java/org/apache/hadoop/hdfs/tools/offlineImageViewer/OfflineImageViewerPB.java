@@ -150,6 +150,7 @@ public class OfflineImageViewerPB {
     ExitUtil.terminate(status);
   }
 
+  @SuppressWarnings("objectconstruction:required.method.not.called") //FP: need path sensitive analysis
   public static int run(String[] args) throws Exception {
     Options options = buildOptions();
     if (args.length == 0) {

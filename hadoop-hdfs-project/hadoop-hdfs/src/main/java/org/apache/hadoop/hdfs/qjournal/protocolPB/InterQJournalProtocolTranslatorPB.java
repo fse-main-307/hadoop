@@ -31,6 +31,7 @@ import org.apache.hadoop.ipc.ProtobufHelper;
 import org.apache.hadoop.ipc.ProtocolMetaInterface;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.ipc.RpcClientUtil;
+import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -42,6 +43,7 @@ import java.io.IOException;
  */
 @InterfaceAudience.Private
 @InterfaceStability.Stable
+@InheritableMustCall({})
 public class InterQJournalProtocolTranslatorPB implements ProtocolMetaInterface,
     InterQJournalProtocol, Closeable {
 

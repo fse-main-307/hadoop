@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hdfs.server.datanode.fsdataset;
 
+import org.checkerframework.checker.mustcall.qual.MustCallChoice;
+
 import java.io.FilterInputStream;
 import java.io.InputStream;
 
@@ -32,7 +34,7 @@ public class LengthInputStream extends FilterInputStream {
    * @param in the underlying input stream.
    * @param length the length of the stream.
    */
-  public LengthInputStream(InputStream in, long length) {
+  @MustCallChoice public LengthInputStream(@MustCallChoice InputStream in, long length) {
     super(in);
     this.length = length;
   }
@@ -41,8 +43,8 @@ public class LengthInputStream extends FilterInputStream {
   public long getLength() {
     return length;
   }
-  
-  public InputStream getWrappedStream() {
+
+  @MustCallChoice public InputStream getWrappedStream() {
     return in;
   }
 }

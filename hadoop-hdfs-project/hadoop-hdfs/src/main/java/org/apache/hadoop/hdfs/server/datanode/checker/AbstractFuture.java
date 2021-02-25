@@ -31,7 +31,7 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import static java.util.concurrent.atomic.AtomicReferenceFieldUpdater
-    .newUpdater;
+        .newUpdater;
 
 import javax.annotation.Nullable;
 import java.security.AccessController;
@@ -823,6 +823,7 @@ public abstract class AbstractFuture<V> implements ListenableFuture<V> {
    * <p>
    * <p>This is approximately the inverse of {@link #getDoneValue(Object)}
    */
+  @SuppressWarnings("mustcall:return.type.incompatible")
   private static Object getFutureValue(ListenableFuture<?> future) {
     Object valueToSet;
     if (future instanceof TrustedFuture) {

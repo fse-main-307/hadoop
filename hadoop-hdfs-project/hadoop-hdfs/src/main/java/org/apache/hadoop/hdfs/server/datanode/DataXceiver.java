@@ -67,6 +67,7 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.DataChecksum;
 import org.apache.hadoop.util.StopWatch;
 import org.apache.hadoop.util.Time;
+import org.checkerframework.checker.objectconstruction.qual.NotOwning;
 import org.slf4j.Logger;
 
 import java.io.BufferedInputStream;
@@ -176,7 +177,7 @@ class DataXceiver extends Receiver implements Runnable {
   /** Return the datanode object. */
   DataNode getDataNode() {return datanode;}
   
-  private OutputStream getOutputStream() {
+  @NotOwning private OutputStream getOutputStream() {
     return socketOut;
   }
 
@@ -219,6 +220,7 @@ class DataXceiver extends Receiver implements Runnable {
    * Read/write data from/to the DataXceiverServer.
    */
   @Override
+  @SuppressWarnings("objectconstruction:required.method.not.called") //TP: input remains open in possible exceptional path
   public void run() {
     int opsProcessed = 0;
     Op op = null;
@@ -346,6 +348,7 @@ class DataXceiver extends Receiver implements Runnable {
   }
 
   @Override
+  @SuppressWarnings({"mustcall:assignment.type.incompatible", "objectconstruction:required.method.not.called"}) //FP: ownership transfer to array
   public void requestShortCircuitFds(final ExtendedBlock blk,
       final Token<BlockTokenIdentifier> token,
       SlotId slotId, int maxVersion, boolean supportsReceiptVerification)
@@ -478,6 +481,7 @@ class DataXceiver extends Receiver implements Runnable {
         setError(error).build().writeDelimitedTo(socketOut);
   }
 
+  @SuppressWarnings("mustcall:assignment.type.incompatible")
   private void sendShmSuccessResponse(DomainSocket sock, NewShmInfo shmInfo)
       throws IOException {
     DataNodeFaultInjector.get().sendShortCircuitShmResponse();
@@ -803,6 +807,7 @@ class DataXceiver extends Receiver implements Runnable {
 
           OutputStream unbufMirrorOut = NetUtils.getOutputStream(mirrorSock,
               writeTimeout);
+
           InputStream unbufMirrorIn = NetUtils.getInputStream(mirrorSock);
           DataEncryptionKeyFactory keyFactory =
             datanode.getDataEncryptionKeyFactoryForBlock(block);
@@ -1074,24 +1079,24 @@ class DataXceiver extends Receiver implements Runnable {
 
   @Override
   public void copyBlock(final ExtendedBlock block,
-      final Token<BlockTokenIdentifier> blockToken) throws IOException {
+                        final Token<BlockTokenIdentifier> blockToken) throws IOException {
     updateCurrentThreadName("Copying block " + block);
     DataOutputStream reply = getBufferedOutputStream();
     checkAccess(reply, true, block, blockToken, Op.COPY_BLOCK,
-        BlockTokenIdentifier.AccessMode.COPY);
+            BlockTokenIdentifier.AccessMode.COPY);
 
     if (datanode.data.getPinning(block)) {
       String msg = "Not able to copy block " + block.getBlockId() + " " +
-          "to " + peer.getRemoteAddressString() + " because it's pinned ";
+              "to " + peer.getRemoteAddressString() + " because it's pinned ";
       LOG.info(msg);
       sendResponse(Status.ERROR_BLOCK_PINNED, msg);
       return;
     }
-    
+
     if (!dataXceiverServer.balanceThrottler.acquire()) { // not able to start
       String msg = "Not able to copy block " + block.getBlockId() + " " +
-          "to " + peer.getRemoteAddressString() + " because threads " +
-          "quota is exceeded.";
+              "to " + peer.getRemoteAddressString() + " because threads " +
+              "quota is exceeded.";
       LOG.info(msg);
       sendResponse(ERROR, msg);
       return;
@@ -1102,8 +1107,8 @@ class DataXceiver extends Receiver implements Runnable {
 
     try {
       // check if the block exists or not
-      blockSender = new BlockSender(block, 0, -1, false, false, true, datanode, 
-          null, CachingStrategy.newDropBehind());
+      blockSender = new BlockSender(block, 0, -1, false, false, true, datanode,
+              null, CachingStrategy.newDropBehind());
 
       OutputStream baseStream = getOutputStream();
 
@@ -1113,12 +1118,12 @@ class DataXceiver extends Receiver implements Runnable {
       long beginRead = Time.monotonicNow();
       // send block content to the target
       long read = blockSender.sendBlock(reply, baseStream,
-                                        dataXceiverServer.balanceThrottler);
+              dataXceiverServer.balanceThrottler);
       long duration = Time.monotonicNow() - beginRead;
       datanode.metrics.incrBytesRead((int) read);
       datanode.metrics.incrBlocksRead();
       datanode.metrics.incrTotalReadTime(duration);
-      
+
       LOG.info("Copied {} to {}", block, peer.getRemoteAddressString());
     } catch (IOException ioe) {
       isOpSuccess = false;
@@ -1144,13 +1149,14 @@ class DataXceiver extends Receiver implements Runnable {
       IOUtils.closeStream(blockSender);
     }
 
-    //update metrics    
+    //update metrics
     datanode.metrics.addCopyBlockOp(elapsed());
   }
 
   @Override
+  @SuppressWarnings("objectconstruction:required.method.not.called") //TP: proxySock remains open in possible exceptional exit
   public void replaceBlock(final ExtendedBlock block,
-      final StorageType storageType, 
+      final StorageType storageType,
       final Token<BlockTokenIdentifier> blockToken,
       final String delHint,
       final DatanodeInfo proxySource,
@@ -1207,19 +1213,19 @@ class DataXceiver extends Receiver implements Runnable {
             unbufProxyOut, unbufProxyIn, keyFactory, blockToken, proxySource);
         unbufProxyOut = saslStreams.out;
         unbufProxyIn = saslStreams.in;
-        
+
         proxyOut = new DataOutputStream(new BufferedOutputStream(unbufProxyOut,
             smallBufferSize));
         proxyReply = new DataInputStream(new BufferedInputStream(unbufProxyIn,
             ioFileBufferSize));
-        
+
         /* send request to the proxy */
         IoeDuringCopyBlockOperation = true;
         new Sender(proxyOut).copyBlock(block, blockToken);
         IoeDuringCopyBlockOperation = false;
-        
+
         // receive the response from the proxy
-        
+
         BlockOpResponseProto copyResponse = BlockOpResponseProto.parseFrom(
             PBHelperClient.vintPrefixed(proxyReply));
 
@@ -1237,16 +1243,16 @@ class DataXceiver extends Receiver implements Runnable {
             proxySock.getLocalSocketAddress().toString(),
             null, 0, 0, 0, "", null, datanode, remoteChecksum,
             CachingStrategy.newDropBehind(), false, false, storageId));
-        
+
         // receive a block
-        blockReceiver.receiveBlock(null, null, replyOut, null, 
+        blockReceiver.receiveBlock(null, null, replyOut, null,
             dataXceiverServer.balanceThrottler, null, true);
-        
+
         // notify name node
         final Replica r = blockReceiver.getReplica();
         datanode.notifyNamenodeReceivedBlock(
             block, delHint, r.getStorageUuid(), r.isOnTransientStorage());
-        
+
         LOG.info("Moved {} from {}, delHint={}",
             block, peer.getRemoteAddressString(), delHint);
       }
@@ -1255,7 +1261,7 @@ class DataXceiver extends Receiver implements Runnable {
       if (ioe instanceof BlockPinningException) {
         opStatus = Status.ERROR_BLOCK_PINNED;
       }
-      errMsg = "opReplaceBlock " + block + " received exception " + ioe; 
+      errMsg = "opReplaceBlock " + block + " received exception " + ioe;
       LOG.info(errMsg);
       if (!IoeDuringCopyBlockOperation) {
         // Don't double count IO errors
@@ -1270,16 +1276,16 @@ class DataXceiver extends Receiver implements Runnable {
         } catch (IOException ignored) {
         }
       }
-      
+
       // now release the thread resource
       dataXceiverServer.balanceThrottler.release();
-      
+
       // send response back
       try {
         sendResponse(opStatus, errMsg);
       } catch (IOException ioe) {
         LOG.warn("Error writing reply back to {}",
-            peer.getRemoteAddressString());
+                peer.getRemoteAddressString());
         incrDatanodeNetworkErrors();
       }
       IOUtils.closeStream(proxyOut);
@@ -1320,7 +1326,7 @@ class DataXceiver extends Receiver implements Runnable {
    * @return
    */
   @VisibleForTesting
-  DataOutputStream getBufferedOutputStream() {
+  @NotOwning DataOutputStream getBufferedOutputStream() {
     return new DataOutputStream(
         new BufferedOutputStream(getOutputStream(), smallBufferSize));
   }

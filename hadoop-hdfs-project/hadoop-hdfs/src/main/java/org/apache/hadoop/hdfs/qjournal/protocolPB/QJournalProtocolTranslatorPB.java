@@ -70,6 +70,7 @@ import org.apache.hadoop.ipc.RpcClientUtil;
 
 import org.apache.hadoop.thirdparty.protobuf.RpcController;
 import org.apache.hadoop.thirdparty.protobuf.ServiceException;
+import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 
 /**
  * This class is the client side translator to translate the requests made on
@@ -78,6 +79,7 @@ import org.apache.hadoop.thirdparty.protobuf.ServiceException;
  */
 @InterfaceAudience.Private
 @InterfaceStability.Stable
+@InheritableMustCall({})
 public class QJournalProtocolTranslatorPB implements ProtocolMetaInterface,
     QJournalProtocol, Closeable {
   /** RpcController is not used and hence is set to null */

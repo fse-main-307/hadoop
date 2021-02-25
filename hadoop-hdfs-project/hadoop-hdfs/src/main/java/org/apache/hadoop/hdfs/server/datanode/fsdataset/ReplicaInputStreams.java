@@ -27,6 +27,10 @@ import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.apache.hadoop.hdfs.server.datanode.FileIoProvider;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.nativeio.NativeIOException;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+import org.checkerframework.checker.mustcall.qual.MustCall;
+import org.checkerframework.checker.objectconstruction.qual.NotOwning;
+import org.checkerframework.checker.objectconstruction.qual.Owning;
 import org.slf4j.Logger;
 
 /**
@@ -35,16 +39,17 @@ import org.slf4j.Logger;
 public class ReplicaInputStreams implements Closeable {
   public static final Logger LOG = DataNode.LOG;
 
-  private InputStream dataIn;
-  private InputStream checksumIn;
+  private final @Owning InputStream dataIn;
+  private final @Owning InputStream checksumIn;
   private FsVolumeReference volumeRef;
   private final FileIoProvider fileIoProvider;
-  private FileDescriptor dataInFd = null;
+  private @MustCall("close") FileDescriptor dataInFd = null;
 
   /** Create an object with a data input stream and a checksum input stream. */
+  @SuppressWarnings("objectconstruction:required.method.not.called") //FP: need to define temp var for type cast node
   public ReplicaInputStreams(
-      InputStream dataStream, InputStream checksumStream,
-      FsVolumeReference volumeRef, FileIoProvider fileIoProvider) {
+          @Owning InputStream dataStream, @Owning InputStream checksumStream,
+          FsVolumeReference volumeRef, FileIoProvider fileIoProvider) {
     this.volumeRef = volumeRef;
     this.fileIoProvider = fileIoProvider;
     this.dataIn = dataStream;
@@ -63,15 +68,16 @@ public class ReplicaInputStreams implements Closeable {
   }
 
   /** @return the data input stream. */
-  public InputStream getDataIn() {
+  @NotOwning public InputStream getDataIn() {
     return dataIn;
   }
 
   /** @return the checksum input stream. */
-  public InputStream getChecksumIn() {
+  @NotOwning public InputStream getChecksumIn() {
     return checksumIn;
   }
 
+  @SuppressWarnings("mustcall:return.type.incompatible")
   public FileDescriptor getDataInFd() {
     return dataInFd;
   }
@@ -100,7 +106,7 @@ public class ReplicaInputStreams implements Closeable {
 
   public void closeChecksumStream() throws IOException {
     IOUtils.closeStream(checksumIn);
-    checksumIn = null;
+//    checksumIn = null;
   }
 
   public void dropCacheBehindReads(String identifier, long offset, long len,
@@ -118,7 +124,7 @@ public class ReplicaInputStreams implements Closeable {
       } catch (IOException e) {
         ioe = e;
       }
-      checksumIn = null;
+//      checksumIn = null;
     }
     if(dataIn!=null) {
       try {
@@ -126,7 +132,7 @@ public class ReplicaInputStreams implements Closeable {
       } catch (IOException e) {
         ioe = e;
       }
-      dataIn = null;
+//      dataIn = null;
       dataInFd = null;
     }
     if (volumeRef != null) {
@@ -140,12 +146,14 @@ public class ReplicaInputStreams implements Closeable {
   }
 
   @Override
+  @SuppressWarnings("contracts.postcondition.not.satisfied")
+  @EnsuresCalledMethods(value = {"this.dataIn", "this.checksumIn"}, methods = {"close"})
   public void close() {
     IOUtils.closeStream(dataIn);
-    dataIn = null;
+//    dataIn = null;
     dataInFd = null;
     IOUtils.closeStream(checksumIn);
-    checksumIn = null;
+//    checksumIn = null;
     IOUtils.cleanup(null, volumeRef);
     volumeRef = null;
   }

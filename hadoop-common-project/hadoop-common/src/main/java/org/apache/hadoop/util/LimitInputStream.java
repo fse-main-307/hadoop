@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.hadoop.classification.InterfaceStability.Unstable;
+import org.checkerframework.checker.mustcall.qual.MustCallChoice;
 
 /**
  * Copied from guava source code v15 (LimitedInputStream)
@@ -40,7 +41,8 @@ public final class LimitInputStream extends FilterInputStream {
   private long left;
   private long mark = -1;
 
-  public LimitInputStream(InputStream in, long limit) {
+  @SuppressWarnings("mustcall")
+  @MustCallChoice public LimitInputStream(@MustCallChoice InputStream in, long limit) {
     super(in);
     checkNotNull(in);
     checkArgument(limit >= 0, "limit must be non-negative");

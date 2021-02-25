@@ -374,6 +374,7 @@ public final class FSImageFormatPBINode {
       return numInodes;
     }
 
+    @SuppressWarnings("objectconstruction:required.method.not.called") //FP: can't verify that close is called on ins
     void loadINodeSectionInParallel(ExecutorService service,
         ArrayList<FileSummary.Section> sections,
         String compressionCodec, StartupProgress prog,

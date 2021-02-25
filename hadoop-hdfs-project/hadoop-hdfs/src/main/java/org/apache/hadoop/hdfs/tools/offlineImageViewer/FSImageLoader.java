@@ -108,6 +108,7 @@ class FSImageLoader {
    * @return FSImageLoader
    * @throws IOException if failed to load fsimage.
    */
+  @SuppressWarnings("objectconstruction:required.method.not.called") //TP: file remains open in possible exceptional exit due to FSImageUtil.checkFileFormat(file)
   static FSImageLoader load(String inputFile) throws IOException {
     Configuration conf = new Configuration();
     RandomAccessFile file = new RandomAccessFile(inputFile, "r");

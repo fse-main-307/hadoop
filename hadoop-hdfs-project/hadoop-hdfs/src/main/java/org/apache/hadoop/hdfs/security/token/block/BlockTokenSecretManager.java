@@ -371,6 +371,7 @@ public class BlockTokenSecretManager extends
    * The current node can only verify that one of the storage [Type|ID] is
    * available. The rest will be on different nodes.
    */
+  @SuppressWarnings("mustcall:argument.type.incompatible") // FP: https://github.com/typetools/checker-framework/issues/979
   public static <T> void checkAccess(T[] candidates, T[] requested, String msg)
       throws InvalidToken {
     if (ArrayUtils.isEmpty(requested)) {
